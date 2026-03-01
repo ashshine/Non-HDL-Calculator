@@ -122,7 +122,8 @@ button {
 <div class="container" id="app">
 
 <div id="iosBanner">
-📱 To install this app: Tap <strong>Share</strong> → <strong>Add to Home Screen</strong>
+🍎 <strong>iPhone & iPad Users:</strong><br>
+To install this app, tap <strong>Share</strong> then select <strong>Add to Home Screen</strong>.
 </div>
 
 <button id="installBtn">Install App</button>
@@ -221,7 +222,7 @@ installBtn.addEventListener('click', () => {
     deferredPrompt.prompt();
 });
 
-/* FORCE iPhone Banner (Always Show On iPhone) */
+/* iPhone Only Banner */
 if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
     document.getElementById("iosBanner").style.display = "block";
 }
