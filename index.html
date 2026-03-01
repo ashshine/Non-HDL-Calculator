@@ -17,7 +17,7 @@ body {
     background: linear-gradient(135deg, #e6f0ff, #f4f9ff);
 }
 
-/* SPLASH SCREEN */
+/* SPLASH */
 #splash {
     position: fixed;
     width: 100%;
@@ -29,10 +29,6 @@ body {
     justify-content: center;
     align-items: center;
     z-index: 9999;
-}
-
-#splash h1 {
-    margin: 10px 0;
 }
 
 .loader {
@@ -49,7 +45,6 @@ body {
     100% { transform: rotate(360deg); }
 }
 
-/* APP CONTAINER */
 .container {
     padding: 40px;
     max-width: 500px;
@@ -102,19 +97,22 @@ button {
 .safe { background:#e6ffe6; color:green; border:1px solid green; }
 
 #installBtn { display:none; background:green; }
+
+/* iPhone Banner */
 #iosBanner {
     display:none;
     background:#fff3cd;
     padding:15px;
     border-radius:10px;
     margin-bottom:20px;
+    font-weight:500;
 }
 </style>
 </head>
 
 <body>
 
-<!-- SPLASH -->
+<!-- Splash Screen -->
 <div id="splash">
     <h1>Non-HDL Calculator</h1>
     <div>Professional Lipid Tool</div>
@@ -124,7 +122,7 @@ button {
 <div class="container" id="app">
 
 <div id="iosBanner">
-📱 Tap Share → Add to Home Screen to install.
+📱 To install: Tap <strong>Share</strong> → <strong>Add to Home Screen</strong>
 </div>
 
 <button id="installBtn">Install App</button>
@@ -198,11 +196,12 @@ function exportPDF() {
     doc.save("Non-HDL-Report.pdf");
 }
 
+/* Service Worker */
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js');
 }
 
-/* ANDROID INSTALL */
+/* Android Install */
 let deferredPrompt;
 const installBtn = document.getElementById('installBtn');
 
@@ -217,17 +216,17 @@ installBtn.addEventListener('click', () => {
     deferredPrompt.prompt();
 });
 
-/* IOS INSTALL BANNER */
+/* iPhone Banner (Stable Version) */
 function isIOS() {
-    return /iphone|ipad|ipod/i.test(navigator.userAgent);
+  return /iphone|ipad|ipod/i.test(navigator.userAgent);
 }
 
 function isInStandaloneMode() {
-    return ('standalone' in window.navigator) && window.navigator.standalone;
+  return window.navigator.standalone === true;
 }
 
 if (isIOS() && !isInStandaloneMode()) {
-    document.getElementById('iosBanner').style.display = 'block';
+  document.getElementById("iosBanner").style.display = "block";
 }
 </script>
 
