@@ -222,11 +222,15 @@ installBtn.addEventListener('click', () => {
     deferredPrompt.prompt();
 });
 
-/* iPhone Only Banner */
-if (/iphone|ipad|ipod/i.test(navigator.userAgent)) {
+/* iOS Safari Only Banner */
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+const isSafari = /safari/i.test(navigator.userAgent) && !/crios|fxios/i.test(navigator.userAgent);
+
+if (isIOS && isSafari) {
     document.getElementById("iosBanner").style.display = "block";
 }
 </script>
 
 </body>
 </html>
+
