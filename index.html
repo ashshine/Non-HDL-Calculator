@@ -6,9 +6,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- PWA INSTALL SUPPORT -->
+    <!-- PWA SUPPORT -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#007bff">
+
+    <!-- jsPDF Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <style>
         body {
@@ -53,6 +56,22 @@
             font-size: 14px;
         }
 
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
         .result {
             font-weight: bold;
             font-size: 16px;
@@ -92,7 +111,6 @@
 
     <h1>Non-HDL Calculator</h1>
 
-    <!-- FORMULA 1 -->
     <h2>Formula 1</h2>
     <p><strong>Non-HDL = Total Cholesterol − HDL</strong></p>
 
@@ -106,7 +124,6 @@
 
     <hr>
 
-    <!-- FORMULA 2 -->
     <h2>Formula 2</h2>
     <p><strong>Non-HDL Target = LDL Target + 30</strong></p>
 
@@ -115,13 +132,13 @@
 
     <div class="result" id="result2">Non-HDL Target: --</div>
 
-    <!-- FORMULA 3 (AUTO WARNING SECTION) -->
     <div id="comparisonBox" class="warning-box"></div>
+
+    <button onclick="exportPDF()">Export as PDF</button>
 
 </div>
 
 <script>
-
 function calculate() {
 
     const total = parseFloat(document.getElementById("totalChol").value);
@@ -131,7 +148,6 @@ function calculate() {
     let nonHDL = null;
     let target = null;
 
-    // Formula 1
     if (!isNaN(total) && !isNaN(hdl)) {
         nonHDL = total - hdl;
         document.getElementById("result1").innerText =
@@ -140,7 +156,6 @@ function calculate() {
         document.getElementById("result1").innerText = "Non-HDL: --";
     }
 
-    // Formula 2
     if (!isNaN(ldl)) {
         target = ldl + 30;
         document.getElementById("result2").innerText =
@@ -151,9 +166,7 @@ function calculate() {
 
     const comparisonBox = document.getElementById("comparisonBox");
 
-    // Formula 3 (Comparison)
     if (nonHDL !== null && target !== null) {
-
         comparisonBox.style.display = "block";
 
         if (nonHDL > target) {
@@ -167,12 +180,38 @@ function calculate() {
             comparisonBox.innerHTML =
                 "✓ Non-HDL is within target";
         }
-
     } else {
         comparisonBox.style.display = "none";
     }
 }
 
+function exportPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const result1 = document.getElementById("result1").innerText;
+    const result2 = document.getElementById("result2").innerText;
+    const comparison = document.getElementById("comparisonBox").innerText;
+
+    doc.setFontSize(16);
+    doc.text("Non-HDL Calculation Report", 20, 20);
+
+    doc.setFontSize(12);
+    doc.text(result1, 20, 40);
+    doc.text(result2, 20, 50);
+
+    if (comparison) {
+        doc.text(comparison, 20, 65);
+    }
+
+    doc.save("Non-HDL-Report.pdf");
+}
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
+}
 </script>
 
 </body>
