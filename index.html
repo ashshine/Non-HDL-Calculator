@@ -6,6 +6,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <!-- PWA INSTALL SUPPORT -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#007bff">
+
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -111,7 +115,7 @@
 
     <div class="result" id="result2">Non-HDL Target: --</div>
 
-    <!-- FORMULA 3 (COMPARISON SECTION) -->
+    <!-- FORMULA 3 (AUTO WARNING SECTION) -->
     <div id="comparisonBox" class="warning-box"></div>
 
 </div>
@@ -127,6 +131,7 @@ function calculate() {
     let nonHDL = null;
     let target = null;
 
+    // Formula 1
     if (!isNaN(total) && !isNaN(hdl)) {
         nonHDL = total - hdl;
         document.getElementById("result1").innerText =
@@ -135,6 +140,7 @@ function calculate() {
         document.getElementById("result1").innerText = "Non-HDL: --";
     }
 
+    // Formula 2
     if (!isNaN(ldl)) {
         target = ldl + 30;
         document.getElementById("result2").innerText =
@@ -145,6 +151,7 @@ function calculate() {
 
     const comparisonBox = document.getElementById("comparisonBox");
 
+    // Formula 3 (Comparison)
     if (nonHDL !== null && target !== null) {
 
         comparisonBox.style.display = "block";
@@ -152,14 +159,15 @@ function calculate() {
         if (nonHDL > target) {
             comparisonBox.className = "warning-box danger";
             comparisonBox.innerHTML =
-                "⚠ Non-HDL is ABOVE target: <br>" +
-                "<span style='font-size:20px;'>"
+                "⚠ Non-HDL is ABOVE target<br><br>" +
+                "<span style='font-size:22px;'>"
                 + nonHDL.toFixed(1) + " mg/dL</span>";
         } else {
             comparisonBox.className = "warning-box safe";
             comparisonBox.innerHTML =
                 "✓ Non-HDL is within target";
         }
+
     } else {
         comparisonBox.style.display = "none";
     }
