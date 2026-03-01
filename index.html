@@ -100,7 +100,7 @@ button {
     font-weight:500;
 }
 
-/* NEW DESKTOP BANNER */
+/* Desktop banner */
 #desktopBanner {
     background:#e8f0ff;
     border:1px solid #b6ccff;
@@ -123,7 +123,6 @@ button {
 
 <div class="container" id="app">
 
-<!-- DESKTOP NOTE -->
 <div id="desktopBanner">
 💻 <strong>Desktop Users:</strong><br>
 Use Chrome, Edge, or Safari → <strong>Install App</strong> from the browser menu.
@@ -223,7 +222,32 @@ function calculate() {
     }
 }
 
-/* exportPDF FUNCTION UNCHANGED */
+function exportPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const total = parseFloat(totalChol.value);
+    const hdlv = parseFloat(hdl.value);
+    const ldlv = parseFloat(ldlTarget.value);
+
+    const nonHDL = (!isNaN(total) && !isNaN(hdlv)) ? (total - hdlv) : null;
+    const target = (!isNaN(ldlv)) ? (ldlv + 30) : null;
+
+    doc.setFontSize(16);
+    doc.text("Non-HDL Cholesterol Report", 20, 20);
+
+    doc.setFontSize(12);
+    doc.text("Total Cholesterol: " + (total || "--"), 20, 40);
+    doc.text("HDL: " + (hdlv || "--"), 20, 50);
+    doc.text("LDL Target: " + (ldlv || "--"), 20, 60);
+
+    doc.text("Non-HDL: " + (nonHDL !== null ? nonHDL.toFixed(1) : "--"), 20, 80);
+    doc.text("Non-HDL Target: " + (target !== null ? target.toFixed(1) : "--"), 20, 90);
+
+    doc.text("Clinical Tool Developed by Nadine Nawfal", 20, 110);
+
+    doc.save("Non-HDL-Report.pdf");
+}
 
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js');
