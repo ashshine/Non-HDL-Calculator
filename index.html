@@ -7,30 +7,43 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      max-width: 420px;
+      max-width: 500px;
       margin: 40px auto;
       padding: 20px;
-      background-color: #f4f6f8;
+      background: #f8f9fb;
     }
+
     h2 {
       text-align: center;
+      margin-bottom: 30px;
     }
+
+    .section {
+      margin-bottom: 30px;
+      padding: 15px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
     input {
       width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      font-size: 16px;
+      padding: 8px;
+      margin: 6px 0 12px 0;
+      font-size: 15px;
     }
+
     .result {
-      margin-top: 20px;
       font-size: 18px;
       font-weight: bold;
+      margin-top: 10px;
     }
+
     button {
-      margin-top: 15px;
       width: 100%;
       padding: 10px;
       font-size: 16px;
+      margin-top: 15px;
     }
   </style>
 </head>
@@ -38,45 +51,81 @@
 
 <h2>Non-HDL Cholesterol Calculator</h2>
 
-<label>Total Cholesterol (mg/dL)</label>
-<input type="number" id="totalChol" min="0" oninput="calculate()">
+<!-- SECTION 1 -->
+<div class="section">
+  <h3>Formula 1</h3>
+  <p><strong>Non-HDL = Total Cholesterol − HDL</strong></p>
 
-<label>HDL (mg/dL)</label>
-<input type="number" id="hdl" min="0" oninput="calculate()">
+  <label>Total Cholesterol (mg/dL)</label>
+  <input type="number" id="total" min="0" oninput="calculateNonHDL()">
 
-<label>LDL Target (mg/dL)</label>
-<input type="number" id="ldlTarget" min="0" oninput="calculate()">
+  <label>HDL (mg/dL)</label>
+  <input type="number" id="hdl" min="0" oninput="calculateNonHDL()">
 
-<div class="result">
-  <p id="nonHdlResult">Non-HDL: --</p>
-  <p id="targetResult">Non-HDL Target: --</p>
+  <div class="result" id="nonhdlResult">
+    Non-HDL: --
+  </div>
+</div>
+
+<!-- SECTION 2 -->
+<div class="section">
+  <h3>Formula 2</h3>
+  <p><strong>Non-HDL Target = LDL Target + 30</strong></p>
+
+  <label>LDL Target (mg/dL)</label>
+  <input type="number" id="ldlTarget" min="0" oninput="calculateTarget()">
+
+  <div class="result" id="targetResult">
+    Non-HDL Target: --
+  </div>
 </div>
 
 <button onclick="exportPDF()">Export as PDF</button>
 
 <script>
-function calculate() {
-  let total = parseFloat(document.getElementById("totalChol").value);
-  let hdl = parseFloat(document.getElementById("hdl").value);
-  let ldlTarget = parseFloat(document.getElementById("ldlTarget").value);
+let currentNonHDL = null;
+let currentTarget = null;
 
-  if (isNaN(total) || isNaN(hdl) || isNaN(ldlTarget)) {
-    return;
+function calculateNonHDL() {
+  let total = parseFloat(document.getElementById("total").value);
+  let hdl = parseFloat(document.getElementById("hdl").value);
+
+  if (!isNaN(total) && !isNaN(hdl)) {
+    currentNonHDL = total - hdl;
+    document.getElementById("nonhdlResult").innerHTML =
+      "Non-HDL: " + currentNonHDL.toFixed(1) + " mg/dL";
+  } else {
+    currentNonHDL = null;
+    document.getElementById("nonhdlResult").innerHTML = "Non-HDL: --";
   }
 
-  let nonHdl = total - hdl;
-  let nonHdlTarget = ldlTarget + 30;
+  compareValues();
+}
 
-  let nonHdlText = document.getElementById("nonHdlResult");
-  let targetText = document.getElementById("targetResult");
+function calculateTarget() {
+  let ldl = parseFloat(document.getElementById("ldlTarget").value);
 
-  nonHdlText.innerHTML = "Non-HDL: " + nonHdl.toFixed(1) + " mg/dL";
-  targetText.innerHTML = "Non-HDL Target: " + nonHdlTarget.toFixed(1) + " mg/dL";
-
-  if (nonHdl > nonHdlTarget) {
-    nonHdlText.style.color = "red";
+  if (!isNaN(ldl)) {
+    currentTarget = ldl + 30;
+    document.getElementById("targetResult").innerHTML =
+      "Non-HDL Target: " + currentTarget.toFixed(1) + " mg/dL";
   } else {
-    nonHdlText.style.color = "black";
+    currentTarget = null;
+    document.getElementById("targetResult").innerHTML = "Non-HDL Target: --";
+  }
+
+  compareValues();
+}
+
+function compareValues() {
+  let resultDiv = document.getElementById("nonhdlResult");
+
+  if (currentNonHDL !== null && currentTarget !== null) {
+    if (currentNonHDL > currentTarget) {
+      resultDiv.style.color = "red";
+    } else {
+      resultDiv.style.color = "black";
+    }
   }
 }
 
@@ -84,18 +133,9 @@ function exportPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
-  let total = document.getElementById("totalChol").value;
-  let hdl = document.getElementById("hdl").value;
-  let ldlTarget = document.getElementById("ldlTarget").value;
-  let nonHdl = document.getElementById("nonHdlResult").innerText;
-  let target = document.getElementById("targetResult").innerText;
-
   doc.text("Non-HDL Cholesterol Report", 20, 20);
-  doc.text("Total Cholesterol: " + total + " mg/dL", 20, 40);
-  doc.text("HDL: " + hdl + " mg/dL", 20, 50);
-  doc.text("LDL Target: " + ldlTarget + " mg/dL", 20, 60);
-  doc.text(nonHdl, 20, 80);
-  doc.text(target, 20, 90);
+  doc.text(document.getElementById("nonhdlResult").innerText, 20, 40);
+  doc.text(document.getElementById("targetResult").innerText, 20, 50);
 
   doc.save("Non-HDL-Report.pdf");
 }
