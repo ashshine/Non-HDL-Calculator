@@ -1,4 +1,4 @@
-const CACHE_NAME = "nonhdl-v2";
+const CACHE_NAME = "nonhdl-v4";
 
 const urlsToCache = [
   "./",
