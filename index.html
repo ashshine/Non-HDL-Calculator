@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Non-HDL Clinical Calculator</title>
+    <title>Non-HDL Calculator</title>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -49,34 +49,31 @@
             font-size: 14px;
         }
 
-        input:focus {
-            border-color: #007bff;
-            outline: none;
-            box-shadow: 0 0 5px rgba(0, 123, 255, 0.4);
-        }
-
         .result {
             font-weight: bold;
             font-size: 16px;
-            color: #0056b3;
             margin-bottom: 20px;
         }
 
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: #007bff;
-            border: none;
-            border-radius: 8px;
-            color: white;
-            font-size: 15px;
-            cursor: pointer;
-            transition: 0.3s;
-            margin-top: 10px;
+        .warning-box {
+            margin-top: 25px;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            text-align: center;
+            display: none;
         }
 
-        button:hover {
-            background-color: #0056b3;
+        .danger {
+            background-color: #ffe6e6;
+            color: red;
+            border: 1px solid red;
+        }
+
+        .safe {
+            background-color: #e6ffe6;
+            color: green;
+            border: 1px solid green;
         }
 
         hr {
@@ -89,60 +86,85 @@
 
 <div class="container">
 
-    <h1>Non-HDL Clinical Calculator</h1>
+    <h1>Non-HDL Calculator</h1>
 
+    <!-- FORMULA 1 -->
     <h2>Formula 1</h2>
     <p><strong>Non-HDL = Total Cholesterol − HDL</strong></p>
 
     <label>Total Cholesterol (mg/dL)</label>
-    <input type="number" id="totalChol" placeholder="Enter total cholesterol">
+    <input type="number" id="totalChol" oninput="calculate()">
 
     <label>HDL (mg/dL)</label>
-    <input type="number" id="hdl" placeholder="Enter HDL">
+    <input type="number" id="hdl" oninput="calculate()">
 
-    <button onclick="calculateNonHDL()">Calculate Non-HDL</button>
-
-    <div class="result" id="result1"></div>
+    <div class="result" id="result1">Non-HDL: --</div>
 
     <hr>
 
+    <!-- FORMULA 2 -->
     <h2>Formula 2</h2>
     <p><strong>Non-HDL Target = LDL Target + 30</strong></p>
 
     <label>LDL Target (mg/dL)</label>
-    <input type="number" id="ldlTarget" placeholder="Enter LDL target">
+    <input type="number" id="ldlTarget" oninput="calculate()">
 
-    <button onclick="calculateTarget()">Calculate Non-HDL Target</button>
+    <div class="result" id="result2">Non-HDL Target: --</div>
 
-    <div class="result" id="result2"></div>
+    <!-- FORMULA 3 (COMPARISON SECTION) -->
+    <div id="comparisonBox" class="warning-box"></div>
 
 </div>
 
 <script>
-    function calculateNonHDL() {
-        const total = parseFloat(document.getElementById("totalChol").value);
-        const hdl = parseFloat(document.getElementById("hdl").value);
 
-        if (isNaN(total) || isNaN(hdl)) {
-            document.getElementById("result1").innerText = "Please enter valid numbers.";
-            return;
-        }
+function calculate() {
 
-        const nonHDL = total - hdl;
-        document.getElementById("result1").innerText = "Non-HDL: " + nonHDL.toFixed(1) + " mg/dL";
+    const total = parseFloat(document.getElementById("totalChol").value);
+    const hdl = parseFloat(document.getElementById("hdl").value);
+    const ldl = parseFloat(document.getElementById("ldlTarget").value);
+
+    let nonHDL = null;
+    let target = null;
+
+    if (!isNaN(total) && !isNaN(hdl)) {
+        nonHDL = total - hdl;
+        document.getElementById("result1").innerText =
+            "Non-HDL: " + nonHDL.toFixed(1) + " mg/dL";
+    } else {
+        document.getElementById("result1").innerText = "Non-HDL: --";
     }
 
-    function calculateTarget() {
-        const ldl = parseFloat(document.getElementById("ldlTarget").value);
-
-        if (isNaN(ldl)) {
-            document.getElementById("result2").innerText = "Please enter a valid number.";
-            return;
-        }
-
-        const target = ldl + 30;
-        document.getElementById("result2").innerText = "Non-HDL Target: " + target.toFixed(1) + " mg/dL";
+    if (!isNaN(ldl)) {
+        target = ldl + 30;
+        document.getElementById("result2").innerText =
+            "Non-HDL Target: " + target.toFixed(1) + " mg/dL";
+    } else {
+        document.getElementById("result2").innerText = "Non-HDL Target: --";
     }
+
+    const comparisonBox = document.getElementById("comparisonBox");
+
+    if (nonHDL !== null && target !== null) {
+
+        comparisonBox.style.display = "block";
+
+        if (nonHDL > target) {
+            comparisonBox.className = "warning-box danger";
+            comparisonBox.innerHTML =
+                "⚠ Non-HDL is ABOVE target: <br>" +
+                "<span style='font-size:20px;'>"
+                + nonHDL.toFixed(1) + " mg/dL</span>";
+        } else {
+            comparisonBox.className = "warning-box safe";
+            comparisonBox.innerHTML =
+                "✓ Non-HDL is within target";
+        }
+    } else {
+        comparisonBox.style.display = "none";
+    }
+}
+
 </script>
 
 </body>
