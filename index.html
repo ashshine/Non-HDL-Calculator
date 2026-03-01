@@ -1,40 +1,235 @@
-const CACHE_NAME = "nonhdl-v2";
+<!DOCTYPE html>
+<html>
+<head>
+<title>Non-HDL Calculator</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-const urlsToCache = [
-  "./",
-  "./index.html",
-  "./manifest.json",
-  "./icon-192.png",
-  "./icon-512.png",
-  "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
-];
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#003366">
 
-self.addEventListener("install", event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(urlsToCache);
-    })
-  );
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+body {
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    background: linear-gradient(135deg, #e6f0ff, #f4f9ff);
+}
+
+/* SPLASH SCREEN */
+#splash {
+    position: fixed;
+    width: 100%;
+    height: 100vh;
+    background: #003366;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+#splash h1 {
+    margin: 10px 0;
+}
+
+.loader {
+    margin-top: 20px;
+    border: 4px solid #ffffff40;
+    border-top: 4px solid white;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    100% { transform: rotate(360deg); }
+}
+
+/* APP CONTAINER */
+.container {
+    padding: 40px;
+    max-width: 500px;
+    margin: auto;
+    display: none;
+    animation: fadeIn 0.6s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+h1, h2 {
+    text-align: center;
+    color: #003366;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0 20px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+.result { font-weight: bold; }
+
+.warning-box {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 10px;
+    display: none;
+    text-align: center;
+    font-weight: bold;
+}
+
+.danger { background:#ffe6e6; color:red; border:1px solid red; }
+.safe { background:#e6ffe6; color:green; border:1px solid green; }
+
+#installBtn { display:none; background:green; }
+#iosBanner {
+    display:none;
+    background:#fff3cd;
+    padding:15px;
+    border-radius:10px;
+    margin-bottom:20px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+    <h1>Non-HDL Calculator</h1>
+    <div>Professional Lipid Tool</div>
+    <div class="loader"></div>
+</div>
+
+<div class="container" id="app">
+
+<div id="iosBanner">
+📱 Tap Share → Add to Home Screen to install.
+</div>
+
+<button id="installBtn">Install App</button>
+
+<h2>Formula 1</h2>
+<p><strong>Non-HDL = Total − HDL</strong></p>
+
+<input type="number" id="totalChol" placeholder="Total Cholesterol" oninput="calculate()">
+<input type="number" id="hdl" placeholder="HDL" oninput="calculate()">
+
+<div class="result" id="result1">Non-HDL: --</div>
+
+<hr>
+
+<h2>Formula 2</h2>
+<p><strong>Non-HDL Target = LDL + 30</strong></p>
+
+<input type="number" id="ldlTarget" placeholder="LDL Target" oninput="calculate()">
+<div class="result" id="result2">Non-HDL Target: --</div>
+
+<div id="comparisonBox" class="warning-box"></div>
+
+<button onclick="exportPDF()">Export as PDF</button>
+
+</div>
+
+<script>
+window.onload = () => {
+    setTimeout(() => {
+        document.getElementById("splash").style.display = "none";
+        document.getElementById("app").style.display = "block";
+    }, 1200);
+};
+
+function calculate() {
+    const total = parseFloat(totalChol.value);
+    const hdlv = parseFloat(hdl.value);
+    const ldlv = parseFloat(ldlTarget.value);
+
+    let nonHDL = null;
+    let target = null;
+
+    if (!isNaN(total) && !isNaN(hdlv)) {
+        nonHDL = total - hdlv;
+        result1.innerText = "Non-HDL: " + nonHDL.toFixed(1);
+    } else result1.innerText = "Non-HDL: --";
+
+    if (!isNaN(ldlv)) {
+        target = ldlv + 30;
+        result2.innerText = "Non-HDL Target: " + target.toFixed(1);
+    } else result2.innerText = "Non-HDL Target: --";
+
+    if (nonHDL !== null && target !== null) {
+        comparisonBox.style.display = "block";
+        if (nonHDL > target) {
+            comparisonBox.className = "warning-box danger";
+            comparisonBox.innerHTML = "⚠ ABOVE target: " + nonHDL.toFixed(1);
+        } else {
+            comparisonBox.className = "warning-box safe";
+            comparisonBox.innerHTML = "✓ Within target";
+        }
+    } else comparisonBox.style.display = "none";
+}
+
+function exportPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.text("Non-HDL Report", 20, 20);
+    doc.text(result1.innerText, 20, 40);
+    doc.text(result2.innerText, 20, 50);
+    doc.save("Non-HDL-Report.pdf");
+}
+
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+}
+
+/* ANDROID INSTALL */
+let deferredPrompt;
+const installBtn = document.getElementById('installBtn');
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.style.display = 'block';
 });
 
-self.addEventListener("fetch", event => {
-  event.respondWith(
-    caches.match(event.request).then(response => {
-      return response || fetch(event.request);
-    })
-  );
+installBtn.addEventListener('click', () => {
+    installBtn.style.display = 'none';
+    deferredPrompt.prompt();
 });
 
-self.addEventListener("activate", event => {
-  event.waitUntil(
-    caches.keys().then(keys => {
-      return Promise.all(
-        keys.map(key => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
-        })
-      );
-    })
-  );
-});
+/* IOS INSTALL BANNER */
+function isIOS() {
+    return /iphone|ipad|ipod/i.test(navigator.userAgent);
+}
+
+function isInStandaloneMode() {
+    return ('standalone' in window.navigator) && window.navigator.standalone;
+}
+
+if (isIOS() && !isInStandaloneMode()) {
+    document.getElementById('iosBanner').style.display = 'block';
+}
+</script>
+
+</body>
+</html>
