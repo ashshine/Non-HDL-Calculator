@@ -1,218 +1,40 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Non-HDL Calculator</title>
+const CACHE_NAME = "nonhdl-v2";
 
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+const urlsToCache = [
+  "./",
+  "./index.html",
+  "./manifest.json",
+  "./icon-192.png",
+  "./icon-512.png",
+  "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
+];
 
-    <!-- PWA SUPPORT -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#007bff">
+self.addEventListener("install", event => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache => {
+      return cache.addAll(urlsToCache);
+    })
+  );
+});
 
-    <!-- jsPDF Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+self.addEventListener("fetch", event => {
+  event.respondWith(
+    caches.match(event.request).then(response => {
+      return response || fetch(event.request);
+    })
+  );
+});
 
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #e6f0ff, #f4f9ff);
-            margin: 0;
-            padding: 40px;
-            display: flex;
-            justify-content: center;
-        }
-
-        .container {
-            background: white;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            width: 500px;
-        }
-
-        h1 {
-            text-align: center;
-            color: #003366;
-            margin-bottom: 30px;
-        }
-
-        h2 {
-            color: #003366;
-            margin-top: 25px;
-        }
-
-        label {
-            font-weight: 600;
-            color: #333;
-        }
-
-        input {
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0 20px 0;
-            border-radius: 8px;
-            border: 1px solid #ccc;
-            font-size: 14px;
-        }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            cursor: pointer;
-            margin-top: 15px;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        .result {
-            font-weight: bold;
-            font-size: 16px;
-            margin-bottom: 20px;
-        }
-
-        .warning-box {
-            margin-top: 25px;
-            padding: 15px;
-            border-radius: 10px;
-            font-weight: bold;
-            text-align: center;
-            display: none;
-        }
-
-        .danger {
-            background-color: #ffe6e6;
-            color: red;
-            border: 1px solid red;
-        }
-
-        .safe {
-            background-color: #e6ffe6;
-            color: green;
-            border: 1px solid green;
-        }
-
-        hr {
-            margin: 30px 0;
-        }
-    </style>
-</head>
-
-<body>
-
-<div class="container">
-
-    <h1>Non-HDL Calculator</h1>
-
-    <h2>Formula 1</h2>
-    <p><strong>Non-HDL = Total Cholesterol − HDL</strong></p>
-
-    <label>Total Cholesterol (mg/dL)</label>
-    <input type="number" id="totalChol" oninput="calculate()">
-
-    <label>HDL (mg/dL)</label>
-    <input type="number" id="hdl" oninput="calculate()">
-
-    <div class="result" id="result1">Non-HDL: --</div>
-
-    <hr>
-
-    <h2>Formula 2</h2>
-    <p><strong>Non-HDL Target = LDL Target + 30</strong></p>
-
-    <label>LDL Target (mg/dL)</label>
-    <input type="number" id="ldlTarget" oninput="calculate()">
-
-    <div class="result" id="result2">Non-HDL Target: --</div>
-
-    <div id="comparisonBox" class="warning-box"></div>
-
-    <button onclick="exportPDF()">Export as PDF</button>
-
-</div>
-
-<script>
-function calculate() {
-
-    const total = parseFloat(document.getElementById("totalChol").value);
-    const hdl = parseFloat(document.getElementById("hdl").value);
-    const ldl = parseFloat(document.getElementById("ldlTarget").value);
-
-    let nonHDL = null;
-    let target = null;
-
-    if (!isNaN(total) && !isNaN(hdl)) {
-        nonHDL = total - hdl;
-        document.getElementById("result1").innerText =
-            "Non-HDL: " + nonHDL.toFixed(1) + " mg/dL";
-    } else {
-        document.getElementById("result1").innerText = "Non-HDL: --";
-    }
-
-    if (!isNaN(ldl)) {
-        target = ldl + 30;
-        document.getElementById("result2").innerText =
-            "Non-HDL Target: " + target.toFixed(1) + " mg/dL";
-    } else {
-        document.getElementById("result2").innerText = "Non-HDL Target: --";
-    }
-
-    const comparisonBox = document.getElementById("comparisonBox");
-
-    if (nonHDL !== null && target !== null) {
-        comparisonBox.style.display = "block";
-
-        if (nonHDL > target) {
-            comparisonBox.className = "warning-box danger";
-            comparisonBox.innerHTML =
-                "⚠ Non-HDL is ABOVE target<br><br>" +
-                "<span style='font-size:22px;'>"
-                + nonHDL.toFixed(1) + " mg/dL</span>";
-        } else {
-            comparisonBox.className = "warning-box safe";
-            comparisonBox.innerHTML =
-                "✓ Non-HDL is within target";
-        }
-    } else {
-        comparisonBox.style.display = "none";
-    }
-}
-
-function exportPDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-
-    const result1 = document.getElementById("result1").innerText;
-    const result2 = document.getElementById("result2").innerText;
-    const comparison = document.getElementById("comparisonBox").innerText;
-
-    doc.setFontSize(16);
-    doc.text("Non-HDL Calculation Report", 20, 20);
-
-    doc.setFontSize(12);
-    doc.text(result1, 20, 40);
-    doc.text(result2, 20, 50);
-
-    if (comparison) {
-        doc.text(comparison, 20, 65);
-    }
-
-    doc.save("Non-HDL-Report.pdf");
-}
-</script>
-
-<script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js');
-}
-</script>
-
-</body>
-</html>
+self.addEventListener("activate", event => {
+  event.waitUntil(
+    caches.keys().then(keys => {
+      return Promise.all(
+        keys.map(key => {
+          if (key !== CACHE_NAME) {
+            return caches.delete(key);
+          }
+        })
+      );
+    })
+  );
+});
